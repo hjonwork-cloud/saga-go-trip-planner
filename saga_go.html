@@ -1,0 +1,1242 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>사가 가족여행 플래너</title>
+    <style>
+      :root {
+        --bg1: #0f172a;
+        --bg2: #1e293b;
+        --primary: #38bdf8;
+        --primary-soft: #7dd3fc;
+        --accent: #f472b6;
+        --card: rgba(15, 23, 42, 0.62);
+        --line: rgba(148, 163, 184, 0.25);
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --ok: #34d399;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Pretendard", "Noto Sans KR", "Segoe UI", Arial, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(1200px 700px at 10% -10%, #1d4ed8 0%, transparent 50%),
+          radial-gradient(900px 600px at 90% 0%, #a21caf 0%, transparent 40%),
+          linear-gradient(135deg, var(--bg1), var(--bg2));
+        min-height: 100vh;
+      }
+
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 36px 20px 28px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 18px;
+        margin-bottom: 16px;
+      }
+
+      .glass {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        backdrop-filter: blur(14px);
+        box-shadow: 0 14px 36px rgba(2, 6, 23, 0.28);
+      }
+
+      .hero-main {
+        padding: 26px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero-main::after {
+        content: "";
+        position: absolute;
+        inset: auto -30px -40px auto;
+        width: 220px;
+        height: 220px;
+        background: radial-gradient(circle, rgba(125, 211, 252, 0.26), transparent 65%);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 32px;
+        line-height: 1.18;
+      }
+
+      .sub {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .badge-row {
+        margin-top: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .badge {
+        padding: 9px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(125, 211, 252, 0.45);
+        background: rgba(56, 189, 248, 0.12);
+        color: #dbeafe;
+        font-size: 13px;
+      }
+
+      .hero-side {
+        padding: 22px;
+      }
+
+      .mini {
+        display: grid;
+        gap: 10px;
+      }
+
+      .mini-item {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 12px 13px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(15, 23, 42, 0.32);
+      }
+
+      .mini-item b {
+        font-size: 13px;
+      }
+
+      .mini-item span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 18px;
+      }
+
+      .timeline-wrap {
+        padding: 18px;
+      }
+
+      .timeline-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+
+      .timeline-head .title {
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .progress {
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .progressbar {
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(100, 116, 139, 0.35);
+        overflow: hidden;
+        margin-bottom: 16px;
+      }
+
+      .progressbar > div {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        transition: width 0.25s ease;
+      }
+
+      .event-card {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 20px;
+        background: linear-gradient(160deg, rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.45));
+        min-height: 320px;
+      }
+
+      .event-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        padding: 7px 11px;
+        border: 1px solid rgba(125, 211, 252, 0.45);
+        background: rgba(56, 189, 248, 0.12);
+        color: #dbeafe;
+        font-size: 12px;
+      }
+
+      .chip.shopping-mark {
+        display: none;
+      }
+
+      .chip.shopping-mark.show {
+        display: inline-flex;
+      }
+
+      .chip.shopping-mark.done {
+        border-color: rgba(52, 211, 153, 0.55);
+        background: rgba(16, 185, 129, 0.16);
+        color: #bbf7d0;
+      }
+
+      .time {
+        font-size: 24px;
+        font-weight: 800;
+        margin-top: 12px;
+      }
+
+      .event-title {
+        margin-top: 8px;
+        font-size: 26px;
+        font-weight: 800;
+        line-height: 1.2;
+      }
+
+      .event-location {
+        margin-top: 8px;
+        color: var(--primary-soft);
+        font-size: 15px;
+      }
+
+      .event-note {
+        margin-top: 16px;
+        color: #e5e7eb;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+
+      .actions {
+        margin-top: 18px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      button,
+      a.btn {
+        border: 1px solid var(--line);
+        background: rgba(30, 41, 59, 0.7);
+        color: #f8fafc;
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        text-decoration: none;
+      }
+
+      button:hover,
+      a.btn:hover {
+        border-color: rgba(125, 211, 252, 0.6);
+        background: rgba(14, 116, 144, 0.22);
+      }
+
+      .nav {
+        margin-top: 16px;
+        display: flex;
+        gap: 10px;
+      }
+
+      .shopping {
+        padding: 16px;
+        position: sticky;
+        top: 12px;
+        height: fit-content;
+      }
+
+      .shopping-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+
+      .shopping-head b {
+        font-size: 16px;
+      }
+
+      .shopping-form {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      input[type="text"] {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        padding: 10px 11px;
+        background: rgba(15, 23, 42, 0.65);
+        color: #f8fafc;
+      }
+
+      input[type="time"],
+      input[type="url"],
+      textarea {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        padding: 10px 11px;
+        background: rgba(15, 23, 42, 0.65);
+        color: #f8fafc;
+        font: inherit;
+      }
+
+      textarea {
+        min-height: 72px;
+        resize: vertical;
+      }
+
+      .shopping-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 8px;
+        max-height: 63vh;
+        overflow: auto;
+      }
+
+      .shopping-item {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 9px;
+        display: grid;
+        grid-template-columns: auto 1fr auto auto;
+        align-items: center;
+        gap: 8px;
+        background: rgba(15, 23, 42, 0.42);
+      }
+
+      .map-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        color: #bae6fd;
+        text-decoration: none;
+        background: rgba(14, 116, 144, 0.14);
+      }
+
+      .map-link:hover {
+        border-color: rgba(125, 211, 252, 0.6);
+        background: rgba(14, 116, 144, 0.24);
+      }
+
+      .shopping-item.done span {
+        text-decoration: line-through;
+        color: var(--muted);
+      }
+
+      .del {
+        border: none;
+        background: transparent;
+        color: #fda4af;
+        font-size: 18px;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      .hint {
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .focus {
+        margin-top: 14px;
+        border: 1px dashed rgba(52, 211, 153, 0.45);
+        border-radius: 12px;
+        padding: 10px 12px;
+        color: #bbf7d0;
+        font-size: 13px;
+      }
+
+      .editor-grid {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .editor-panel {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 12px;
+        background: rgba(15, 23, 42, 0.42);
+      }
+
+      .editor-title {
+        font-size: 13px;
+        margin-bottom: 8px;
+        color: #cbd5e1;
+      }
+
+      .form-grid {
+        display: grid;
+        gap: 8px;
+      }
+
+      .row-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .editor-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .danger {
+        border-color: rgba(251, 113, 133, 0.45);
+        color: #fecdd3;
+      }
+
+      @media (max-width: 980px) {
+        .hero {
+          grid-template-columns: 1fr;
+        }
+        .layout {
+          grid-template-columns: 1fr;
+        }
+        .editor-grid {
+          grid-template-columns: 1fr;
+        }
+        .shopping {
+          position: static;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .page {
+          padding: 18px 12px 20px;
+        }
+
+        h1 {
+          font-size: 26px;
+        }
+
+        .hero-main,
+        .hero-side,
+        .timeline-wrap,
+        .shopping {
+          padding: 14px;
+        }
+
+        .event-card {
+          padding: 14px;
+          min-height: 0;
+        }
+
+        .time {
+          font-size: 20px;
+        }
+
+        .event-title {
+          font-size: 22px;
+        }
+
+        .event-note {
+          font-size: 14px;
+        }
+
+        .actions,
+        .nav,
+        .editor-actions {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        .row-2 {
+          grid-template-columns: 1fr;
+        }
+
+        .shopping-list {
+          max-height: 42vh;
+        }
+
+        .shopping-item {
+          grid-template-columns: auto 1fr auto auto;
+          gap: 6px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <section class="hero">
+        <article class="hero-main glass">
+          <h1>🇯🇵 사가 가족여행<br />최종 일정</h1>
+          <div class="sub">2026.06.14 ~ 2026.06.17 · 희조 / 아내 / 이현(5개월) · 렌터카: 닛산 데이즈</div>
+          <div class="badge-row">
+            <div class="badge">아기와 함께 여유로운 템포</div>
+            <div class="badge">온천 중심 힐링</div>
+            <div class="badge">사가 식문화 탐방</div>
+            <div class="badge">나베시마 사케 찾기</div>
+          </div>
+        </article>
+        <aside class="hero-side glass">
+          <div style="margin-bottom: 10px; color: var(--muted); font-size: 13px">숙소 플랜</div>
+          <div class="mini">
+            <div class="mini-item"><b>6/14 요요카쿠 (가라쓰)</b><span>체크인 15:30</span></div>
+            <div class="mini-item"><b>6/15~16 와타야벳소 (우레시노)</b><span>체크인 16:00</span></div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="layout">
+        <article class="timeline-wrap glass">
+          <div class="timeline-head">
+            <div class="title">시간순 타임라인</div>
+            <div class="progress" id="progressText">1 / 1</div>
+          </div>
+          <div class="progressbar"><div id="progressBar"></div></div>
+
+          <div class="event-card" id="eventCard">
+            <div class="event-top">
+              <div>
+                <div class="chip" id="dayChip">Day 1</div>
+                <div class="time" id="eventTime">--:--</div>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end">
+                <div class="chip shopping-mark" id="shoppingMark">🛍️ 쇼핑 0/0</div>
+                <div class="chip" id="dateChip">6/14</div>
+              </div>
+            </div>
+
+            <div class="event-title" id="eventTitle">일정 로딩 중...</div>
+            <div class="event-location" id="eventLocation"></div>
+            <div class="event-note" id="eventNote"></div>
+
+            <div class="actions">
+              <a class="btn" id="mapBtn" href="#" target="_blank" rel="noreferrer noopener">📍 구글맵 열기</a>
+              <button id="addShoppingBtn">🛍️ 쇼핑리스트에 추가</button>
+            </div>
+
+            <div class="focus" id="focusText"></div>
+          </div>
+
+          <div class="nav">
+            <button id="prevBtn">← 이전 일정</button>
+            <button id="nextBtn">다음 일정 →</button>
+          </div>
+
+          <div class="hint">팁: 방향키 ← / → 로도 넘길 수 있어요.</div>
+
+          <div class="editor-grid">
+            <section class="editor-panel" aria-label="현재 일정 수정">
+              <div class="editor-title">현재 일정 수정</div>
+              <form id="editForm" class="form-grid">
+                <div class="row-2">
+                  <input id="editDate" type="text" placeholder="날짜 (예: 6/14)" required />
+                  <input id="editTime" type="time" required />
+                </div>
+                <input id="editTitle" type="text" placeholder="일정 제목" required />
+                <input id="editLocation" type="text" placeholder="장소" required />
+                <input id="editMap" type="url" placeholder="구글맵 URL" />
+                <input id="editConcept" type="text" placeholder="컨셉 (예: 사진 많이 남기기)" />
+                <textarea id="editNote" placeholder="메모"></textarea>
+                <div class="editor-actions">
+                  <button type="submit">현재 일정 저장</button>
+                  <button id="deleteEventBtn" type="button" class="danger">현재 일정 삭제</button>
+                </div>
+              </form>
+            </section>
+
+            <section class="editor-panel" aria-label="새 일정 추가">
+              <div class="editor-title">새 일정 추가</div>
+              <form id="addForm" class="form-grid">
+                <div class="row-2">
+                  <input id="addDate" type="text" placeholder="날짜 (예: 6/15)" required />
+                  <input id="addTime" type="time" required />
+                </div>
+                <input id="addTitle" type="text" placeholder="새 일정 제목" required />
+                <input id="addLocation" type="text" placeholder="장소" required />
+                <input id="addMap" type="url" placeholder="구글맵 URL (비우면 장소로 자동 생성)" />
+                <input id="addConcept" type="text" placeholder="컨셉" />
+                <textarea id="addNote" placeholder="메모"></textarea>
+                <div class="editor-actions">
+                  <button type="submit">새 일정 추가</button>
+                </div>
+              </form>
+            </section>
+          </div>
+        </article>
+
+        <aside class="shopping glass" aria-label="쇼핑리스트">
+          <div class="shopping-head">
+            <b>🧺 쇼핑리스트</b>
+            <button id="resetBtn" style="padding: 6px 9px; font-size: 12px">초기화</button>
+          </div>
+
+          <form class="shopping-form" id="shoppingForm">
+            <input id="shoppingInput" type="text" placeholder="예: 유자코쇼" />
+            <button type="submit">추가</button>
+          </form>
+
+          <ul class="shopping-list" id="shoppingList"></ul>
+          <div class="hint">브라우저에 자동 저장됩니다 (LocalStorage).</div>
+        </aside>
+      </section>
+    </div>
+
+    <script>
+      const initialTimeline = [
+        { day: 1, date: "6/14", time: "07:55", title: "인천 출발", location: "인천국제공항", note: "여권/아기 짐 마지막 체크", map: "https://www.google.com/maps/search/?api=1&query=Incheon+International+Airport", shopping: [] },
+        { day: 1, date: "6/14", time: "09:50", title: "사가공항 도착", location: "Saga Airport", note: "입국 후 렌터카 인수 준비", map: "https://www.google.com/maps/search/?api=1&query=Saga+Airport", shopping: [] },
+        { day: 1, date: "6/14", time: "10:30", title: "렌터카 수령", location: "Saga Airport Car Rental", note: "카시트/네비/보험 확인", map: "https://www.google.com/maps/search/?api=1&query=Saga+Airport+Car+Rental", shopping: [] },
+        { day: 1, date: "6/14", time: "11:00", title: "유메타운 사가", location: "Youme Town Saga", note: "수유·휴식 후 점심 + 유니클로/칼디 쇼핑", map: "https://www.google.com/maps/search/?api=1&query=Youme+Town+Saga", shopping: ["유자코쇼", "호리니시 스파이스", "칸즈리", "산쇼", "아오이 니은니쿠 라유"] },
+        { day: 1, date: "6/14", time: "14:00", title: "가라쓰로 이동", location: "Saga → Karatsu", note: "이동 중 아기 컨디션 체크", map: "https://www.google.com/maps/dir/?api=1&origin=Saga+Airport&destination=Karatsu", shopping: [] },
+        { day: 1, date: "6/14", time: "15:00", title: "히레후리 전망대", location: "Hirafuri Observation Deck", note: "첫 가족 사진 포인트", map: "https://www.google.com/maps/search/?api=1&query=Hirafuri+Observation+Deck+Karatsu", shopping: [] },
+        { day: 1, date: "6/14", time: "15:30", title: "요요카쿠 체크인", location: "Yoyokaku", note: "방 정리 후 짧은 휴식", map: "https://www.google.com/maps/search/?api=1&query=Yoyokaku+Karatsu", shopping: [] },
+        { day: 1, date: "6/14", time: "16:00", title: "키코안 카페 & 강변 산책", location: "Kikoan Cafe, Karatsu", note: "16:00~17:00 천천히 산책", map: "https://www.google.com/maps/search/?api=1&query=Kikoan+Cafe+Karatsu", shopping: [] },
+        { day: 1, date: "6/14", time: "17:00", title: "사케노 나가타 방문", location: "Sakeno Nagata", note: "나베시마 퍼플라벨/아이야마 우선 탐색", map: "https://www.google.com/maps/search/?api=1&query=Sakeno+Nagata+Karatsu", shopping: ["나베시마 퍼플라벨 (赤磐雄町)", "나베시마 아이야마 (愛山)", "나베시마 특별준마이", "나베시마 준마이긴죠"] },
+        { day: 1, date: "6/14", time: "18:00", title: "요요카쿠 가이세키", location: "Yoyokaku", note: "저녁은 동선 최소화로 편하게", map: "https://www.google.com/maps/search/?api=1&query=Yoyokaku+Karatsu", shopping: [] },
+        { day: 1, date: "6/14", time: "20:00", title: "마이즈루 쇼핑", location: "Maizuru Karatsu", note: "조미료 + 야식 + 생필품 구매", map: "https://www.google.com/maps/search/?api=1&query=Maizuru+Karatsu", shopping: ["다시간장", "유자폰즈", "참깨드레싱", "지역 간장", "사시미", "초밥", "맥주", "생수", "우유", "요거트"] },
+        { day: 1, date: "6/14", time: "21:00", title: "온천 & 휴식", location: "Yoyokaku", note: "Day1 마무리", map: "https://www.google.com/maps/search/?api=1&query=Yoyokaku+Karatsu", shopping: [] },
+
+        { day: 2, date: "6/15", time: "07:00", title: "요요카쿠 조식", location: "Yoyokaku", note: "07:00~08:00 여유롭게 조식", map: "https://www.google.com/maps/search/?api=1&query=Yoyokaku+Karatsu", shopping: [] },
+        { day: 2, date: "6/15", time: "08:45", title: "체크아웃", location: "Yoyokaku", note: "짐/아기 용품 누락 체크", map: "https://www.google.com/maps/search/?api=1&query=Yoyokaku+Karatsu", shopping: [] },
+        { day: 2, date: "6/15", time: "09:30", title: "요부코 아침시장", location: "Yobuko Morning Market", note: "해산물 간식 탐방", map: "https://www.google.com/maps/search/?api=1&query=Yobuko+Morning+Market", shopping: ["오징어 센베", "이카슈마이", "말린 오징어"] },
+        { day: 2, date: "6/15", time: "10:30", title: "항구 산책", location: "Yobuko Port", note: "바람 쐬며 짧은 산책", map: "https://www.google.com/maps/search/?api=1&query=Yobuko+Port", shopping: [] },
+        { day: 2, date: "6/15", time: "11:30", title: "아리타 이동", location: "Yobuko → Arita", note: "차 안 수면 타임 확보", map: "https://www.google.com/maps/dir/?api=1&origin=Yobuko&destination=Arita", shopping: [] },
+        { day: 2, date: "6/15", time: "12:15", title: "아리타 세라", location: "Arita Será", note: "12:15~15:00 도자기 쇼핑 집중", map: "https://www.google.com/maps/search/?api=1&query=Arita+Sera", shopping: ["이유식 그릇", "밥공기", "소스볼", "접시", "머그컵", "소형 덮밥그릇", "사케잔", "커피잔"] },
+        { day: 2, date: "6/15", time: "15:30", title: "우레시노 이동", location: "Arita → Ureshino", note: "체크인 전 컨디션 회복", map: "https://www.google.com/maps/dir/?api=1&origin=Arita&destination=Ureshino", shopping: [] },
+        { day: 2, date: "6/15", time: "16:00", title: "와타야벳소 체크인", location: "Wataya Besso", note: "온천 준비", map: "https://www.google.com/maps/search/?api=1&query=Wataya+Besso", shopping: [] },
+        { day: 2, date: "6/15", time: "16:30", title: "호텔 산책", location: "Wataya Besso Garden", note: "사진 많이 남기기", map: "https://www.google.com/maps/search/?api=1&query=Wataya+Besso", shopping: [] },
+        { day: 2, date: "6/15", time: "17:30", title: "온천", location: "Wataya Besso", note: "본격 힐링 시작", map: "https://www.google.com/maps/search/?api=1&query=Wataya+Besso", shopping: [] },
+        { day: 2, date: "6/15", time: "18:30", title: "포장음식 픽업", location: "Ureshino", note: "아이 컨디션 따라 객실식 유지", map: "https://www.google.com/maps/search/?api=1&query=Ureshino", shopping: [] },
+        { day: 2, date: "6/15", time: "19:00", title: "객실 저녁", location: "Wataya Besso", note: "이동 최소화", map: "https://www.google.com/maps/search/?api=1&query=Wataya+Besso", shopping: [] },
+        { day: 2, date: "6/15", time: "21:00", title: "온천", location: "Wataya Besso", note: "Day2 마무리", map: "https://www.google.com/maps/search/?api=1&query=Wataya+Besso", shopping: [] },
+
+        { day: 3, date: "6/16", time: "07:30", title: "조식", location: "Wataya Besso", note: "가벼운 일정의 시작", map: "https://www.google.com/maps/search/?api=1&query=Wataya+Besso", shopping: [] },
+        { day: 3, date: "6/16", time: "09:00", title: "호텔 정원 산책", location: "Wataya Besso Garden", note: "햇살 좋은 시간대 산책", map: "https://www.google.com/maps/search/?api=1&query=Wataya+Besso", shopping: [] },
+        { day: 3, date: "6/16", time: "10:00", title: "우레시노 온천거리", location: "Ureshino Onsen Street", note: "기념품 스팟 사전 체크", map: "https://www.google.com/maps/search/?api=1&query=Ureshino+Onsen+Street", shopping: ["우레시노 차", "온천 기념품", "지역 과자"] },
+        { day: 3, date: "6/16", time: "11:00", title: "자유시간", location: "Ureshino", note: "카페/휴식 자유 선택", map: "https://www.google.com/maps/search/?api=1&query=Ureshino", shopping: [] },
+        { day: 3, date: "6/16", time: "12:30", title: "후지 오코노미야끼", location: "Fuji Okonomiyaki", note: "점심 맛집", map: "https://www.google.com/maps/search/?api=1&query=Fuji+Okonomiyaki+Ureshino", shopping: [] },
+        { day: 3, date: "6/16", time: "14:00", title: "호텔 휴식", location: "Wataya Besso", note: "아기 낮잠 타임", map: "https://www.google.com/maps/search/?api=1&query=Wataya+Besso", shopping: [] },
+        { day: 3, date: "6/16", time: "15:30", title: "온천", location: "Wataya Besso", note: "컨디션 따라 유동 운영", map: "https://www.google.com/maps/search/?api=1&query=Wataya+Besso", shopping: [] },
+        { day: 3, date: "6/16", time: "17:00", title: "크레용 함박", location: "Crayon Hamburg", note: "저녁 외식", map: "https://www.google.com/maps/search/?api=1&query=Crayon+Hamburg+Ureshino", shopping: [] },
+        { day: 3, date: "6/16", time: "18:30", title: "호텔 복귀", location: "Wataya Besso", note: "온천 전 재정비", map: "https://www.google.com/maps/search/?api=1&query=Wataya+Besso", shopping: [] },
+        { day: 3, date: "6/16", time: "19:00", title: "온천", location: "Wataya Besso", note: "여행 마지막 밤", map: "https://www.google.com/maps/search/?api=1&query=Wataya+Besso", shopping: [] },
+        { day: 3, date: "6/16", time: "20:00", title: "강변 산책", location: "Ureshino River", note: "마무리 산책", map: "https://www.google.com/maps/search/?api=1&query=Ureshino+River", shopping: [] },
+
+        { day: 4, date: "6/17", time: "06:30", title: "체크아웃", location: "Wataya Besso", note: "귀국 동선 시작", map: "https://www.google.com/maps/search/?api=1&query=Wataya+Besso", shopping: [] },
+        { day: 4, date: "6/17", time: "07:00", title: "사가공항 이동", location: "Ureshino → Saga Airport", note: "여유 있게 출발", map: "https://www.google.com/maps/dir/?api=1&origin=Ureshino&destination=Saga+Airport", shopping: [] },
+        { day: 4, date: "6/17", time: "08:00", title: "렌터카 반납", location: "Saga Airport Car Return", note: "연료/짐 최종 확인", map: "https://www.google.com/maps/search/?api=1&query=Saga+Airport+Car+Rental", shopping: [] },
+        { day: 4, date: "6/17", time: "10:40", title: "사가 출발", location: "Saga Airport", note: "면세 및 탑승 준비", map: "https://www.google.com/maps/search/?api=1&query=Saga+Airport", shopping: [] },
+        { day: 4, date: "6/17", time: "12:15", title: "인천 도착", location: "인천국제공항", note: "수고했어요, 가족여행 완료!", map: "https://www.google.com/maps/search/?api=1&query=Incheon+International+Airport", shopping: [] }
+      ];
+
+      const defaultShoppingItems = [
+        "나베시마 퍼플라벨 (赤磐雄町)",
+        "나베시마 아이야마 (愛山)",
+        "나베시마 특별준마이",
+        "나베시마 준마이긴죠",
+        "유자코쇼",
+        "호리니시 스파이스",
+        "칸즈리",
+        "산쇼",
+        "아오이 니은니쿠 라유",
+        "다시간장",
+        "유자폰즈",
+        "참깨드레싱",
+        "지역 간장",
+        "오징어 센베",
+        "이카슈마이",
+        "말린 오징어",
+        "이유식 그릇",
+        "밥공기",
+        "소스볼",
+        "접시",
+        "머그컵",
+        "커피잔",
+        "우레시노 차",
+        "온천 기념품"
+      ];
+
+      const timelineStorageKey = "saga_go_timeline";
+      const timelineYear = 2026;
+
+      let timeline = [];
+      let index = 0;
+
+      const dayChip = document.getElementById("dayChip");
+      const dateChip = document.getElementById("dateChip");
+      const eventTime = document.getElementById("eventTime");
+      const eventTitle = document.getElementById("eventTitle");
+      const eventLocation = document.getElementById("eventLocation");
+      const eventNote = document.getElementById("eventNote");
+      const mapBtn = document.getElementById("mapBtn");
+      const addShoppingBtn = document.getElementById("addShoppingBtn");
+      const progressText = document.getElementById("progressText");
+      const progressBar = document.getElementById("progressBar");
+      const focusText = document.getElementById("focusText");
+      const shoppingMark = document.getElementById("shoppingMark");
+
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+
+      const shoppingForm = document.getElementById("shoppingForm");
+      const shoppingInput = document.getElementById("shoppingInput");
+      const shoppingList = document.getElementById("shoppingList");
+      const resetBtn = document.getElementById("resetBtn");
+
+      const editForm = document.getElementById("editForm");
+      const editDate = document.getElementById("editDate");
+      const editTime = document.getElementById("editTime");
+      const editTitle = document.getElementById("editTitle");
+      const editLocation = document.getElementById("editLocation");
+      const editMap = document.getElementById("editMap");
+      const editConcept = document.getElementById("editConcept");
+      const editNote = document.getElementById("editNote");
+      const deleteEventBtn = document.getElementById("deleteEventBtn");
+
+      const addForm = document.getElementById("addForm");
+      const addDate = document.getElementById("addDate");
+      const addTime = document.getElementById("addTime");
+      const addTitle = document.getElementById("addTitle");
+      const addLocation = document.getElementById("addLocation");
+      const addMap = document.getElementById("addMap");
+      const addConcept = document.getElementById("addConcept");
+      const addNote = document.getElementById("addNote");
+
+      function createEventId() {
+        if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+          return crypto.randomUUID();
+        }
+        return `event-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      }
+
+      function normalizeDate(value) {
+        const raw = String(value || "").trim();
+        const match = raw.match(/^(\d{1,2})\s*[\/\.-]\s*(\d{1,2})$/);
+        if (!match) return "6/14";
+        const month = Math.min(12, Math.max(1, Number(match[1])));
+        const day = Math.min(31, Math.max(1, Number(match[2])));
+        return `${month}/${day}`;
+      }
+
+      function normalizeTime(value) {
+        const raw = String(value || "").trim();
+        const match = raw.match(/^(\d{1,2}):(\d{2})$/);
+        if (!match) return "09:00";
+        const hour = String(Math.min(23, Math.max(0, Number(match[1])))).padStart(2, "0");
+        const minute = String(Math.min(59, Math.max(0, Number(match[2])))).padStart(2, "0");
+        return `${hour}:${minute}`;
+      }
+
+      function getDateParts(dateValue) {
+        const normalized = normalizeDate(dateValue);
+        const [month, day] = normalized.split("/").map(Number);
+        return { month, day };
+      }
+
+      function getTimeParts(timeValue) {
+        const normalized = normalizeTime(timeValue);
+        const [hour, minute] = normalized.split(":").map(Number);
+        return { hour, minute };
+      }
+
+      function getSortTimestamp(item) {
+        const { month, day } = getDateParts(item.date);
+        const { hour, minute } = getTimeParts(item.time);
+        return new Date(timelineYear, month - 1, day, hour, minute, 0, 0).getTime();
+      }
+
+      function inferMapUrl(location, map) {
+        const url = String(map || "").trim();
+        if (url) return url;
+        const query = encodeURIComponent(String(location || "").trim());
+        if (!query) return "https://www.google.com/maps";
+        return `https://www.google.com/maps/search/?api=1&query=${query}`;
+      }
+
+      function saveTimeline() {
+        localStorage.setItem(timelineStorageKey, JSON.stringify(timeline));
+      }
+
+      function sortAndReindexTimeline(focusId) {
+        timeline.sort((a, b) => {
+          const tsDiff = getSortTimestamp(a) - getSortTimestamp(b);
+          if (tsDiff !== 0) return tsDiff;
+          return (a.title || "").localeCompare(b.title || "", "ko");
+        });
+
+        const dayMap = new Map();
+        let dayCounter = 0;
+        timeline.forEach((item) => {
+          const dateKey = normalizeDate(item.date);
+          if (!dayMap.has(dateKey)) {
+            dayCounter += 1;
+            dayMap.set(dateKey, dayCounter);
+          }
+          item.day = dayMap.get(dateKey);
+          item.date = dateKey;
+          item.time = normalizeTime(item.time);
+          item.map = inferMapUrl(item.location, item.map);
+        });
+
+        if (timeline.length === 0) {
+          index = 0;
+          return;
+        }
+
+        if (focusId) {
+          const foundIndex = timeline.findIndex((item) => item.id === focusId);
+          if (foundIndex >= 0) {
+            index = foundIndex;
+            return;
+          }
+        }
+        if (index > timeline.length - 1) {
+          index = timeline.length - 1;
+        }
+      }
+
+      function loadTimeline() {
+        const raw = localStorage.getItem(timelineStorageKey);
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              timeline = parsed.map((item) => ({
+                id: item.id || createEventId(),
+                day: Number(item.day) || 1,
+                date: normalizeDate(item.date),
+                time: normalizeTime(item.time),
+                title: String(item.title || "새 일정"),
+                location: String(item.location || "장소 미정"),
+                note: String(item.note || ""),
+                map: inferMapUrl(item.location, item.map),
+                concept: String(item.concept || ""),
+                shopping: Array.isArray(item.shopping) ? item.shopping : []
+              }));
+              sortAndReindexTimeline();
+              return;
+            }
+          } catch {
+            localStorage.removeItem(timelineStorageKey);
+          }
+        }
+
+        timeline = initialTimeline.map((item) => ({
+          id: createEventId(),
+          day: item.day,
+          date: normalizeDate(item.date),
+          time: normalizeTime(item.time),
+          title: item.title,
+          location: item.location,
+          note: item.note,
+          map: inferMapUrl(item.location, item.map),
+          concept: "",
+          shopping: Array.isArray(item.shopping) ? item.shopping : []
+        }));
+        sortAndReindexTimeline();
+      }
+
+      function loadShopping() {
+        const raw = localStorage.getItem("saga_go_shopping");
+        if (!raw) {
+          return defaultShoppingItems.map((text) => ({ text, done: false, links: [] }));
+        }
+        try {
+          const parsed = JSON.parse(raw);
+          if (!Array.isArray(parsed)) throw new Error("bad data");
+          return parsed
+            .map((item) => {
+              if (typeof item === "string") {
+                return { text: item, done: false, links: [] };
+              }
+              return {
+                text: String(item.text || "").trim(),
+                done: !!item.done,
+                links: Array.isArray(item.links) ? item.links.map(String) : []
+              };
+            })
+            .filter((item) => item.text.length > 0);
+        } catch {
+          return defaultShoppingItems.map((text) => ({ text, done: false, links: [] }));
+        }
+      }
+
+      let shoppingItems = loadShopping();
+
+      function saveShopping() {
+        localStorage.setItem("saga_go_shopping", JSON.stringify(shoppingItems));
+      }
+
+      function renderShopping() {
+        shoppingList.innerHTML = "";
+        shoppingItems.forEach((item, i) => {
+          const li = document.createElement("li");
+          li.className = "shopping-item" + (item.done ? " done" : "");
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = !!item.done;
+          checkbox.addEventListener("change", () => {
+            shoppingItems[i].done = checkbox.checked;
+            saveShopping();
+            renderShopping();
+            renderTimeline();
+          });
+
+          const text = document.createElement("span");
+          text.textContent = item.text;
+
+          const mapUrl = getShoppingMapUrl(item);
+          const mapLink = document.createElement("a");
+          mapLink.className = "map-link";
+          mapLink.textContent = "🗺️";
+          mapLink.title = "연결 일정 구글맵 열기";
+          mapLink.setAttribute("aria-label", "연결 일정 구글맵 열기");
+          mapLink.target = "_blank";
+          mapLink.rel = "noreferrer noopener";
+          if (mapUrl) {
+            mapLink.href = mapUrl;
+          } else {
+            mapLink.style.visibility = "hidden";
+            mapLink.tabIndex = -1;
+          }
+
+          const del = document.createElement("button");
+          del.className = "del";
+          del.type = "button";
+          del.textContent = "×";
+          del.addEventListener("click", () => {
+            shoppingItems.splice(i, 1);
+            saveShopping();
+            renderShopping();
+            renderTimeline();
+          });
+
+          li.appendChild(checkbox);
+          li.appendChild(text);
+          li.appendChild(mapLink);
+          li.appendChild(del);
+          shoppingList.appendChild(li);
+        });
+      }
+
+      function addShoppingItem(value, eventId) {
+        const text = value.trim();
+        if (!text) return;
+        const existsIndex = shoppingItems.findIndex((item) => item.text === text);
+        if (existsIndex >= 0) {
+          if (eventId && !shoppingItems[existsIndex].links.includes(eventId)) {
+            shoppingItems[existsIndex].links.push(eventId);
+            saveShopping();
+            renderShopping();
+            renderTimeline();
+          }
+          return;
+        }
+
+        shoppingItems.unshift({
+          text,
+          done: false,
+          links: eventId ? [eventId] : []
+        });
+        saveShopping();
+        renderShopping();
+        renderTimeline();
+      }
+
+      function getEventShoppingTexts(item) {
+        const set = new Set();
+        shoppingItems.forEach((shoppingItem) => {
+          if (Array.isArray(shoppingItem.links) && shoppingItem.links.includes(item.id)) {
+            set.add(shoppingItem.text);
+          }
+        });
+        return Array.from(set);
+      }
+
+      function getShoppingMapUrl(shoppingItem) {
+        if (!Array.isArray(shoppingItem.links) || shoppingItem.links.length === 0) {
+          return "";
+        }
+
+        const linkedEvents = shoppingItem.links
+          .map((eventId) => timeline.find((eventItem) => eventItem.id === eventId))
+          .filter(Boolean)
+          .sort((a, b) => getSortTimestamp(a) - getSortTimestamp(b));
+
+        if (linkedEvents.length === 0) return "";
+
+        const map = String(linkedEvents[0].map || "").trim();
+        if (!map || map === "https://www.google.com/maps") return "";
+        return map;
+      }
+
+      function getShoppingStatus(item) {
+        const eventShoppingTexts = getEventShoppingTexts(item);
+        if (eventShoppingTexts.length === 0) {
+          return { total: 0, done: 0, missing: 0 };
+        }
+
+        const done = eventShoppingTexts.filter((text) => {
+          const target = shoppingItems.find((shoppingItem) => shoppingItem.text === text);
+          return !!target?.done;
+        }).length;
+
+        const missing = eventShoppingTexts.filter((text) => !shoppingItems.some((shoppingItem) => shoppingItem.text === text)).length;
+
+        return { total: eventShoppingTexts.length, done, missing };
+      }
+
+      function syncShoppingLinksFromTimeline() {
+        timeline.forEach((eventItem) => {
+          const eventTexts = (eventItem.shopping || []).map((text) => String(text || "").trim()).filter(Boolean);
+          eventTexts.forEach((text) => {
+            const target = shoppingItems.find((shoppingItem) => shoppingItem.text === text);
+            if (target && !target.links.includes(eventItem.id)) {
+              target.links.push(eventItem.id);
+            }
+          });
+        });
+      }
+
+      function cleanShoppingLinks() {
+        const eventIds = new Set(timeline.map((item) => item.id));
+        shoppingItems.forEach((shoppingItem) => {
+          if (!Array.isArray(shoppingItem.links)) {
+            shoppingItem.links = [];
+            return;
+          }
+          shoppingItem.links = shoppingItem.links.filter((eventId) => eventIds.has(eventId));
+        });
+      }
+
+      function refreshSyncState() {
+        cleanShoppingLinks();
+        syncShoppingLinksFromTimeline();
+        saveShopping();
+      }
+
+      function getFocusText(item) {
+        const eventShoppingTexts = getEventShoppingTexts(item);
+        if ((item.concept || "").trim()) {
+          return "오늘의 컨셉: " + item.concept.trim();
+        }
+        if (eventShoppingTexts.length > 0) {
+          return "오늘의 쇼핑 포인트: " + eventShoppingTexts.slice(0, 3).join(" · ");
+        }
+        if (item.title.includes("온천")) {
+          return "오늘의 컨셉: 무리하지 않고 회복 중심 템포";
+        }
+        if (item.title.includes("이동")) {
+          return "오늘의 컨셉: 이동 구간은 여유 있게, 아기 컨디션 최우선";
+        }
+        return "오늘의 컨셉: 가족 사진 포인트를 놓치지 않기";
+      }
+
+      function fillEditForm(item) {
+        editDate.value = item.date;
+        editTime.value = item.time;
+        editTitle.value = item.title;
+        editLocation.value = item.location;
+        editMap.value = item.map;
+        editConcept.value = item.concept || "";
+        editNote.value = item.note || "";
+
+        if (!addDate.value) addDate.value = item.date;
+        if (!addTime.value) addTime.value = item.time;
+      }
+
+      function renderTimeline() {
+        if (timeline.length === 0) {
+          eventTime.textContent = "--:--";
+          eventTitle.textContent = "일정이 없습니다";
+          eventLocation.textContent = "📌 새 일정을 추가해 주세요";
+          eventNote.textContent = "오른쪽(아래) 폼에서 바로 추가할 수 있어요.";
+          mapBtn.href = "https://www.google.com/maps";
+          dayChip.textContent = "Day -";
+          dateChip.textContent = "-/-";
+          progressText.textContent = "0 / 0";
+          progressBar.style.width = "0%";
+          focusText.textContent = "오늘의 컨셉: 새 일정 만들기";
+          shoppingMark.className = "chip shopping-mark";
+          shoppingMark.textContent = "🛍️ 쇼핑 0/0";
+          prevBtn.disabled = true;
+          nextBtn.disabled = true;
+          prevBtn.style.opacity = "0.45";
+          nextBtn.style.opacity = "0.45";
+          return;
+        }
+
+        const item = timeline[index];
+        dayChip.textContent = `Day ${item.day}`;
+        dateChip.textContent = item.date;
+        eventTime.textContent = item.time;
+        eventTitle.textContent = item.title;
+        eventLocation.textContent = `📌 ${item.location}`;
+        eventNote.textContent = item.note;
+        mapBtn.href = item.map;
+        progressText.textContent = `${index + 1} / ${timeline.length}`;
+        progressBar.style.width = `${((index + 1) / timeline.length) * 100}%`;
+
+        const shoppingStatus = getShoppingStatus(item);
+        if (shoppingStatus.total > 0) {
+          eventTitle.textContent = `🛍️ ${item.title}`;
+          shoppingMark.className = "chip shopping-mark show" + (shoppingStatus.done === shoppingStatus.total ? " done" : "");
+          shoppingMark.textContent = `🛍️ 쇼핑 ${shoppingStatus.done}/${shoppingStatus.total}`;
+        } else {
+          eventTitle.textContent = item.title;
+          shoppingMark.className = "chip shopping-mark";
+          shoppingMark.textContent = "🛍️ 쇼핑 0/0";
+        }
+
+        focusText.textContent = getFocusText(item);
+
+        prevBtn.disabled = index === 0;
+        nextBtn.disabled = index === timeline.length - 1;
+        prevBtn.style.opacity = prevBtn.disabled ? "0.45" : "1";
+        nextBtn.style.opacity = nextBtn.disabled ? "0.45" : "1";
+        fillEditForm(item);
+      }
+
+      prevBtn.addEventListener("click", () => {
+        if (index > 0) {
+          index -= 1;
+          renderTimeline();
+        }
+      });
+
+      nextBtn.addEventListener("click", () => {
+        if (index < timeline.length - 1) {
+          index += 1;
+          renderTimeline();
+        }
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") prevBtn.click();
+        if (e.key === "ArrowRight") nextBtn.click();
+      });
+
+      addShoppingBtn.addEventListener("click", () => {
+        if (timeline.length === 0) return;
+        const item = timeline[index];
+        if (item.shopping.length === 0) {
+          addShoppingItem(item.title, item.id);
+          return;
+        }
+        item.shopping.forEach((shoppingText) => addShoppingItem(shoppingText, item.id));
+      });
+
+      shoppingForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const currentEventId = timeline[index]?.id;
+        addShoppingItem(shoppingInput.value, currentEventId);
+        shoppingInput.value = "";
+        shoppingInput.focus();
+      });
+
+      resetBtn.addEventListener("click", () => {
+        shoppingItems = defaultShoppingItems.map((text) => ({ text, done: false, links: [] }));
+        refreshSyncState();
+        saveShopping();
+        renderShopping();
+        renderTimeline();
+      });
+
+      editForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (timeline.length === 0) return;
+        const current = timeline[index];
+        current.date = normalizeDate(editDate.value);
+        current.time = normalizeTime(editTime.value);
+        current.title = editTitle.value.trim() || "새 일정";
+        current.location = editLocation.value.trim() || "장소 미정";
+        current.map = inferMapUrl(current.location, editMap.value);
+        current.concept = editConcept.value.trim();
+        current.note = editNote.value.trim();
+
+        sortAndReindexTimeline(current.id);
+        saveTimeline();
+        refreshSyncState();
+        renderTimeline();
+      });
+
+      deleteEventBtn.addEventListener("click", () => {
+        if (timeline.length === 0) return;
+        const current = timeline[index];
+        timeline = timeline.filter((item) => item.id !== current.id);
+        sortAndReindexTimeline();
+        saveTimeline();
+        refreshSyncState();
+        renderTimeline();
+      });
+
+      addForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const newItem = {
+          id: createEventId(),
+          day: 1,
+          date: normalizeDate(addDate.value),
+          time: normalizeTime(addTime.value),
+          title: addTitle.value.trim() || "새 일정",
+          location: addLocation.value.trim() || "장소 미정",
+          note: addNote.value.trim(),
+          map: inferMapUrl(addLocation.value, addMap.value),
+          concept: addConcept.value.trim(),
+          shopping: []
+        };
+
+        timeline.push(newItem);
+        sortAndReindexTimeline(newItem.id);
+        saveTimeline();
+        refreshSyncState();
+        renderTimeline();
+
+        addTitle.value = "";
+        addLocation.value = "";
+        addMap.value = "";
+        addConcept.value = "";
+        addNote.value = "";
+      });
+
+      loadTimeline();
+      refreshSyncState();
+      renderTimeline();
+      renderShopping();
+    </script>
+  </body>
+</html>
