@@ -679,9 +679,66 @@
       function startRealtimeSync() {
         if (hasStartedRealtimeSync) return;
         hasStartedRealtimeSync = true;
-        isRealtimeSyncReady = true;
-        setupTimelineListener();
-        setupShoppingListener();
+
+        Promise.all([database.ref(firebasePaths.timeline).once("value"), database.ref(firebasePaths.shopping).once("value")])
+          .then(([timelineSnapshot, shoppingSnapshot]) => {
+            const remoteTimeline = timelineSnapshot.val();
+            const remoteShopping = shoppingSnapshot.val();
+
+            if (Array.isArray(remoteTimeline) && remoteTimeline.length > 0) {
+              timeline = remoteTimeline.map((item) => ({
+                id: item.id || createEventId(),
+                day: Number(item.day) || 1,
+                date: normalizeDate(item.date),
+                time: normalizeTime(item.time),
+                title: String(item.title || "새 일정"),
+                location: String(item.location || "장소 미정"),
+                note: String(item.note || ""),
+                map: inferMapUrl(item.location, item.map),
+                concept: String(item.concept || ""),
+                shopping: Array.isArray(item.shopping) ? item.shopping : []
+              }));
+              sortAndReindexTimeline();
+              localStorage.setItem(timelineStorageKey, JSON.stringify(timeline));
+            }
+
+            if (Array.isArray(remoteShopping)) {
+              shoppingItems = remoteShopping
+                .map((item) => {
+                  if (typeof item === "string") {
+                    return { text: item, done: false, links: [] };
+                  }
+                  return {
+                    text: String(item.text || "").trim(),
+                    done: !!item.done,
+                    links: Array.isArray(item.links) ? item.links.map(String) : []
+                  };
+                })
+                .filter((item) => item.text.length > 0);
+              localStorage.setItem("saga_go_shopping", JSON.stringify(shoppingItems));
+            }
+
+            isRealtimeSyncReady = true;
+
+            if (!Array.isArray(remoteTimeline) || remoteTimeline.length === 0) {
+              saveTimeline();
+            }
+            if (!Array.isArray(remoteShopping)) {
+              saveShopping();
+            }
+
+            refreshSyncState(false);
+            renderTimeline();
+            renderShopping();
+            setupTimelineListener();
+            setupShoppingListener();
+          })
+          .catch((error) => {
+            console.error("Realtime bootstrap failed:", error);
+            isRealtimeSyncReady = true;
+            setupTimelineListener();
+            setupShoppingListener();
+          });
       }
 
       auth.signInAnonymously()
@@ -974,14 +1031,10 @@
               }));
               sortAndReindexTimeline();
               localStorage.setItem(timelineStorageKey, JSON.stringify(timeline));
-              refreshSyncState();
+              refreshSyncState(false);
               renderShopping();
               renderTimeline();
               return;
-            }
-
-            if (!snapshot.exists() && timeline.length > 0) {
-              saveTimeline();
             }
           },
           (error) => {
@@ -1047,10 +1100,6 @@
               renderShopping();
               renderTimeline();
               return;
-            }
-
-            if (!snapshot.exists() && shoppingItems.length > 0) {
-              saveShopping();
             }
           },
           (error) => {
@@ -1202,10 +1251,12 @@
         });
       }
 
-      function refreshSyncState() {
+      function refreshSyncState(shouldPersist = true) {
         cleanShoppingLinks();
         syncShoppingLinksFromTimeline();
-        saveShopping();
+        if (shouldPersist) {
+          saveShopping();
+        }
       }
 
       function getFocusData(item) {
