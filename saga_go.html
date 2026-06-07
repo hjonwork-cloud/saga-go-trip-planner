@@ -1210,23 +1210,23 @@
 
       function getFocusData(item) {
         const eventShoppingTexts = getEventShoppingTexts(item);
-        const concept = (item.concept || "").trim();
+        let concept = (item.concept || "").trim();
         const shopping = eventShoppingTexts.length > 0 ? eventShoppingTexts.slice(0, 3).join(" · ") : "";
 
-        if (concept || shopping) {
-          return {
-            concept: concept || "",
-            shopping: shopping || ""
-          };
+        if (!concept) {
+          if (item.title.includes("온천")) {
+            concept = "무리하지 않고 회복 중심 템포";
+          } else if (item.title.includes("이동")) {
+            concept = "이동 구간은 여유 있게, 아기 컨디션 최우선";
+          } else {
+            concept = "가족 사진 포인트를 놓치지 않기";
+          }
         }
 
-        if (item.title.includes("온천")) {
-          return { concept: "무리하지 않고 회복 중심 템포", shopping: "" };
-        }
-        if (item.title.includes("이동")) {
-          return { concept: "이동 구간은 여유 있게, 아기 컨디션 최우선", shopping: "" };
-        }
-        return { concept: "가족 사진 포인트를 놓치지 않기", shopping: "" };
+        return {
+          concept: concept || "",
+          shopping: shopping || ""
+        };
       }
 
       function renderFocusPanel(data) {
