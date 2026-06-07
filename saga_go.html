@@ -636,8 +636,8 @@
       const auth = firebase.auth();
       const database = firebase.database();
       const firebasePaths = {
-        timeline: "shared/timeline",
-        shopping: "shared/shopping"
+        timeline: "timeline",
+        shopping: "shopping"
       };
 
       let isRealtimeSyncReady = false;
@@ -917,6 +917,7 @@
           shopping: Array.isArray(item.shopping) ? item.shopping : []
         }));
         sortAndReindexTimeline();
+        saveTimeline();
       }
 
       function setupTimelineListener() {
