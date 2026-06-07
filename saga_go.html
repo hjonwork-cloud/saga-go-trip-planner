@@ -382,6 +382,35 @@
         padding: 10px 12px;
         color: #bbf7d0;
         font-size: 13px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        align-items: stretch;
+      }
+
+      .focus.single {
+        grid-template-columns: 1fr;
+      }
+
+      .focus-item {
+        min-width: 0;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.4);
+        border: 1px solid rgba(187, 247, 208, 0.14);
+      }
+
+      .focus-label {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 11px;
+        color: #86efac;
+      }
+
+      .focus-value {
+        display: block;
+        color: #dcfce7;
+        line-height: 1.45;
       }
 
       .editor-grid {
@@ -493,6 +522,10 @@
         .shopping-item {
           grid-template-columns: auto 1fr auto auto;
           gap: 6px;
+        }
+
+        .focus {
+          grid-template-columns: 1fr;
         }
       }
     </style>
@@ -1175,21 +1208,48 @@
         saveShopping();
       }
 
-      function getFocusText(item) {
+      function getFocusData(item) {
         const eventShoppingTexts = getEventShoppingTexts(item);
-        if ((item.concept || "").trim()) {
-          return "오늘의 컨셉: " + item.concept.trim();
+        const concept = (item.concept || "").trim();
+        const shopping = eventShoppingTexts.length > 0 ? eventShoppingTexts.slice(0, 3).join(" · ") : "";
+
+        if (concept || shopping) {
+          return {
+            concept: concept || "",
+            shopping: shopping || ""
+          };
         }
-        if (eventShoppingTexts.length > 0) {
-          return "오늘의 쇼핑 포인트: " + eventShoppingTexts.slice(0, 3).join(" · ");
-        }
+
         if (item.title.includes("온천")) {
-          return "오늘의 컨셉: 무리하지 않고 회복 중심 템포";
+          return { concept: "무리하지 않고 회복 중심 템포", shopping: "" };
         }
         if (item.title.includes("이동")) {
-          return "오늘의 컨셉: 이동 구간은 여유 있게, 아기 컨디션 최우선";
+          return { concept: "이동 구간은 여유 있게, 아기 컨디션 최우선", shopping: "" };
         }
-        return "오늘의 컨셉: 가족 사진 포인트를 놓치지 않기";
+        return { concept: "가족 사진 포인트를 놓치지 않기", shopping: "" };
+      }
+
+      function renderFocusPanel(data) {
+        const sections = [];
+        if (data.concept) {
+          sections.push(`
+            <div class="focus-item">
+              <span class="focus-label">오늘의 컨셉</span>
+              <span class="focus-value">${data.concept}</span>
+            </div>
+          `);
+        }
+        if (data.shopping) {
+          sections.push(`
+            <div class="focus-item">
+              <span class="focus-label">쇼핑 포인트</span>
+              <span class="focus-value">${data.shopping}</span>
+            </div>
+          `);
+        }
+
+        focusText.className = "focus" + (sections.length <= 1 ? " single" : "");
+        focusText.innerHTML = sections.join("");
       }
 
       function fillEditForm(item) {
@@ -1216,7 +1276,7 @@
           dateChip.textContent = "-/-";
           progressText.textContent = "0 / 0";
           progressBar.style.width = "0%";
-          focusText.textContent = "오늘의 컨셉: 새 일정 만들기";
+          renderFocusPanel({ concept: "새 일정 만들기", shopping: "" });
           shoppingMark.className = "chip shopping-mark";
           shoppingMark.textContent = "🛍️ 쇼핑 0/0";
           prevBtn.disabled = true;
@@ -1248,7 +1308,7 @@
           shoppingMark.textContent = "🛍️ 쇼핑 0/0";
         }
 
-        focusText.textContent = getFocusText(item);
+        renderFocusPanel(getFocusData(item));
 
         prevBtn.disabled = index === 0;
         nextBtn.disabled = index === timeline.length - 1;
