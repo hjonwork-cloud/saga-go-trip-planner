@@ -496,6 +496,10 @@
         }
       }
     </style>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js"></script>
   </head>
   <body>
     <div class="page">
@@ -610,12 +614,33 @@
           </form>
 
           <ul class="shopping-list" id="shoppingList"></ul>
-          <div class="hint">브라우저에 자동 저장됩니다 (LocalStorage).</div>
+          <div class="hint">☁️ Firebase에 실시간 동기화됩니다.</div>
         </aside>
       </section>
     </div>
 
     <script>
+      // Firebase Configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyAk77qEHZDxAuJS7MgBkQ9B8uJhy1i20TA",
+        authDomain: "saga-go-trip-planner.firebaseapp.com",
+        projectId: "saga-go-trip-planner",
+        storageBucket: "saga-go-trip-planner.firebasestorage.app",
+        messagingSenderId: "560542820259",
+        appId: "1:560542820259:web:913c4e74a2cfea1ee05c16",
+        databaseURL: "https://saga-go-trip-planner-default-rtdb.firebaseio.com"
+      };
+
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+      const database = firebase.database();
+
+      // Sign in anonymously
+      auth.signInAnonymously().catch((error) => {
+        console.error("Anonymous authentication failed:", error);
+      });
+
       const initialTimeline = [
         { day: 1, date: "6/14", time: "07:55", title: "인천 출발", location: "인천국제공항", note: "여권/아기 짐 마지막 체크", map: "https://www.google.com/maps/search/?api=1&query=Incheon+International+Airport", shopping: [] },
         { day: 1, date: "6/14", time: "09:50", title: "사가공항 도착", location: "Saga Airport", note: "입국 후 렌터카 인수 준비", map: "https://www.google.com/maps/search/?api=1&query=Saga+Airport", shopping: [] },
@@ -788,7 +813,11 @@
       }
 
       function saveTimeline() {
-        localStorage.setItem(timelineStorageKey, JSON.stringify(timeline));
+        database.ref("timeline").set(timeline).catch((error) => {
+          console.error("Failed to save timeline:", error);
+          // Fallback to localStorage
+          localStorage.setItem(timelineStorageKey, JSON.stringify(timeline));
+        });
       }
 
       function sortAndReindexTimeline(focusId) {
@@ -870,6 +899,30 @@
         sortAndReindexTimeline();
       }
 
+      function setupTimelineListener() {
+        database.ref("timeline").on("value", (snapshot) => {
+          const data = snapshot.val();
+          if (data && Array.isArray(data) && data.length > 0) {
+            timeline = data.map((item) => ({
+              id: item.id || createEventId(),
+              day: Number(item.day) || 1,
+              date: normalizeDate(item.date),
+              time: normalizeTime(item.time),
+              title: String(item.title || "새 일정"),
+              location: String(item.location || "장소 미정"),
+              note: String(item.note || ""),
+              map: inferMapUrl(item.location, item.map),
+              concept: String(item.concept || ""),
+              shopping: Array.isArray(item.shopping) ? item.shopping : []
+            }));
+            sortAndReindexTimeline();
+            renderTimeline();
+          }
+        }, (error) => {
+          console.error("Error loading timeline from Firebase:", error);
+        });
+      }
+
       function loadShopping() {
         const raw = localStorage.getItem("saga_go_shopping");
         if (!raw) {
@@ -895,10 +948,36 @@
         }
       }
 
-      let shoppingItems = loadShopping();
+      let shoppingItems = [];
 
       function saveShopping() {
-        localStorage.setItem("saga_go_shopping", JSON.stringify(shoppingItems));
+        database.ref("shopping").set(shoppingItems).catch((error) => {
+          console.error("Failed to save shopping items:", error);
+          // Fallback to localStorage
+          localStorage.setItem("saga_go_shopping", JSON.stringify(shoppingItems));
+        });
+      }
+
+      function setupShoppingListener() {
+        database.ref("shopping").on("value", (snapshot) => {
+          const data = snapshot.val();
+          if (data && Array.isArray(data)) {
+            shoppingItems = data.map((item) => {
+              if (typeof item === "string") {
+                return { text: item, done: false, links: [] };
+              }
+              return {
+                text: String(item.text || "").trim(),
+                done: !!item.done,
+                links: Array.isArray(item.links) ? item.links.map(String) : []
+              };
+            });
+            renderShopping();
+            renderTimeline();
+          }
+        }, (error) => {
+          console.error("Error loading shopping items from Firebase:", error);
+        });
       }
 
       function renderShopping() {
@@ -1234,6 +1313,14 @@
       });
 
       loadTimeline();
+      shoppingItems = loadShopping();
+      
+      // Setup Firebase Listeners for real-time sync
+      setTimeout(() => {
+        setupTimelineListener();
+        setupShoppingListener();
+      }, 800);
+      
       refreshSyncState();
       renderTimeline();
       renderShopping();
